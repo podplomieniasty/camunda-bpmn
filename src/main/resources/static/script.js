@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 movie_title: mov.title,
                                 movie_id: mov.id,
                                 movie_genre: mov.genre,
-                                movie_duration: mov.duration,
+                                movie_duration: mov.duration
                             }
                             startProcess(obj);
                         });
@@ -66,23 +66,59 @@ function toggleModal(obj) {
         });
         MOVIE_DATE.addEventListener('change', () => {
             MOVIE_HOUR.innerHTML = '';
+            MOVIE_SEAT.innerHTML = '';
+
             showings.filter((o) => o.date === MOVIE_DATE.value).forEach(showing => {
                 MOVIE_HOUR.innerHTML += generateSelectOptions(showing.hour);
+            })
+            const showing = showings.find((o) => o.date === MOVIE_DATE.value && o.hour === MOVIE_HOUR.value);
+
+            // fetching seats
+            fetch(`/api/room?room=${showing.cinemaRoomId}`, { method: 'GET' })
+            .then(res => res.json()).then(room => {
+                for(let c = 1; c <= room.columns; c++) {
+                    for(let r = 1; r <= room.rows; r++) {
+                        MOVIE_SEAT.innerHTML += generateSelectOptions(`C${c}-R${r}`);
+                    }
+                }
+            })
+            
+            MOVIE_HOUR.addEventListener('change', () => {
+                MOVIE_SEAT.innerHTML = '';
+                const showing = showings.find((o) => o.date === MOVIE_DATE.value && o.hour === MOVIE_HOUR.value);
+                // fetching seats
+                fetch(`/api/room?room=${showing.cinemaRoomId}`, { method: 'GET' })
+                .then(res => res.json()).then(room => {
+                    for(let c = 1; c <= room.columns; c++) {
+                        for(let r = 1; r <= room.rows; r++) {
+                            MOVIE_SEAT.innerHTML += generateSelectOptions(`C${c}-R${r}`);
+                        }
+                    }
+                })
             })
         })
     })
 }
 
 function startProcess(obj) {
-    fetch(`/camunda/start`, { 
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify(obj)})
-    .then(res => res.json())
-    .then(variables => {
-        processInstanceKey = variables.processInstanceKey;
-        console.log(processInstanceKey);
+
+    fetch(`/api/showing?movie=${obj.movie_id}`, {
+        method: 'GET',
     })
+    .then(res => res.json())
+    .then(showings => {
+        let id = showings.find((o) => o.date === MOVIE_DATE.value && o.hour === MOVIE_HOUR.value).id;
+        fetch(`/camunda/start`, { 
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({...obj, showingId: id})})
+        .then(res => res.json())
+        .then(variables => {
+            processInstanceKey = variables.processInstanceKey;
+            console.log(processInstanceKey);
+        })
+    })
+    
 }
 
 function fetchMovies() {

@@ -1,10 +1,17 @@
 package com.atar.ticketBooking.worker;
 
+import com.atar.ticketBooking.model.Reservation;
+import com.atar.ticketBooking.service.CodeService;
+import com.atar.ticketBooking.service.EmailService;
+import com.atar.ticketBooking.service.ReservationService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import lombok.AllArgsConstructor;
+import org.camunda.feel.syntaxtree.In;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import scala.Int;
 
 import java.util.Map;
 import java.util.Objects;
@@ -13,22 +20,38 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ReservationWorker {
 
+    @Autowired private ReservationService reservationService;
+    @Autowired private CodeService codeService;
+    @Autowired private EmailService emailService;
+
     @JobWorker(type = "verify-seat-availability")
     public Map<String, Object> verifySeatAvailability(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Verifying seat availability");
         System.out.println(jobResultVariables);
 
-        // service to do this shit goes here
-        boolean isVerified = true;
-        jobResultVariables.put("seatIsVerified", isVerified);
+        var splitt = jobResultVariables.get("movie_seat").toString().replace("C","").replace("R", "").split("-");
+        Integer col = Integer.parseInt(splitt[0]);
+        Integer row = Integer.parseInt(splitt[1]);
 
-        if(!isVerified) {
+        // service to do this shit goes here
+        boolean isSeatFree = reservationService.isReservationAvailable(
+                Long.valueOf(jobResultVariables.get("showingId").toString()),
+                row,
+                col
+        );
+        System.out.println("SEAT IS AVAILABLE: " + isSeatFree);
+        jobResultVariables.put("isSeatFree", isSeatFree);
+        jobResultVariables.put("seatRow", row);
+        jobResultVariables.put("seatCol", col);
+
+        if(!isSeatFree) {
             client.newThrowErrorCommand(job.getKey())
                     .errorCode("SEAT_NOT_AVAILABLE")
                     .send()
                     .join();
         }
+
         return jobResultVariables;
     }
 
@@ -37,13 +60,22 @@ public class ReservationWorker {
         var jobResultVariables = job.getVariablesAsMap();
 
         System.out.println("Verifying e-mail integrity");
-        var email = (String)jobResultVariables.get("email");
+        var email = (String)jobResultVariables.get("user_email");
 
         if(Objects.isNull(email) || email.isEmpty()) {
-//            client.newThrowErrorCommand(job.getKey())
-//                    .errorCode("SEAT_NOT_AVAILABLE")
-//                    .send()
-//                    .join();
+            client.newThrowErrorCommand(job.getKey())
+                    .errorCode("INVALID_EMAIL")
+                    .send()
+                    .join();
+            System.out.println("EMAIL IS EMPTY");
+
+        }
+        if(!email.contains("@")) {
+            client.newThrowErrorCommand(job.getKey())
+                    .errorCode("INVALID_EMAIL")
+                    .send()
+                    .join();
+            System.out.println("EMAIL DOESNT CONTAIN @");
         }
         return jobResultVariables;
     }
@@ -61,7 +93,8 @@ public class ReservationWorker {
     public Map<String, Object> generateCode(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Generating code");
-
+        var code = codeService.generateCode(jobResultVariables.get("user_lname").toString(), jobResultVariables.get("movie_date").toString());
+        jobResultVariables.put("access_code", code);
         return jobResultVariables;
     }
 
@@ -69,7 +102,7 @@ public class ReservationWorker {
     public Map<String, Object> sendToEmail(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending e-mail");
-
+        emailService.sendReservationCodeEmail(jobResultVariables.get("user_email").toString());
         return jobResultVariables;
     }
 

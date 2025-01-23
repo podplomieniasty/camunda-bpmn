@@ -49,10 +49,7 @@ function getModalTemplate(obj, dates, seats) {
           <td>Miejsce siedzące</td>
           <td>
             <select name="movie-seat" id="movie-seat" >
-              <option value="A-1">A-1</option>
-              <option value="A-2">A-2</option>
-              <option value="B-1">B-1</option>
-              <option value="B-2">B-2</option>
+
             </select>
           </td>
         </tr>

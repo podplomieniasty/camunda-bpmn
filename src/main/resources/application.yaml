@@ -12,6 +12,20 @@ spring:
     view:
       prefix: /WEB-INF/view/
       suffix: .jsp
+  mail:
+    host: "smtp.gmail.com"
+    port: 587
+    username: "ticket.booker.bpmn@gmail.com"
+    password: "skibidi123"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            protocols: TLSv1.2
   datasource:
     url: jdbc:postgresql://195.150.230.208:5432/2023_polak_michal?currentSchema=ticket_booking
     username: 2023_polak_michal
