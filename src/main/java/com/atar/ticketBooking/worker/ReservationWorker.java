@@ -8,14 +8,20 @@ import com.atar.ticketBooking.service.ReservationService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.spring.client.annotation.JobWorker;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.camunda.feel.syntaxtree.In;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import scala.Int;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 
 @Component
 @AllArgsConstructor
@@ -25,6 +31,19 @@ public class ReservationWorker {
     @Autowired private CodeService codeService;
     @Autowired private EmailService emailService;
     @Autowired private EmitterService emitterService;
+
+
+    @Value("${spring.mail.host}")
+    private String mailHost;
+
+    @Value("${spring.mail.port}")
+    private int mailPort;
+
+    @Value("${spring.mail.username}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password}")
+    private String mailPassword;
 
     @JobWorker(type = "verify-seat-availability")
     public Map<String, Object> verifySeatAvailability(final JobClient client, final ActivatedJob job) {
@@ -53,6 +72,10 @@ public class ReservationWorker {
                     .send()
                     .join();
         }
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
 
         return jobResultVariables;
     }
@@ -79,6 +102,11 @@ public class ReservationWorker {
                     .join();
             System.out.println("EMAIL DOESNT CONTAIN @");
         }
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
+
         return jobResultVariables;
     }
 
@@ -86,7 +114,10 @@ public class ReservationWorker {
     public Map<String, Object> reserveSeat(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Reserving seat");
-
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
 
         return jobResultVariables;
     }
@@ -95,25 +126,67 @@ public class ReservationWorker {
     public Map<String, Object> generateCode(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Generating code");
-        var code = codeService.generateCode(jobResultVariables.get("user_lname").toString(), jobResultVariables.get("movie_date").toString());
+        System.out.println(jobResultVariables);
 
-//        var reservation = new Reservation();
-//
-//        reservation.setEmail(jobResultVariables.get("user_email").toString());
-//        reservation.setAccessCode(code);
-//        reservation.setShowingId(Long.valueOf(jobResultVariables.get("showingId").toString()));
-//        reservation.setSeatRow(Integer.parseInt(jobResultVariables.get("seatRow").toString()));
-//        reservation.setSeatCol(Integer.parseInt(jobResultVariables.get("seatCol").toString()));
-//
-//        reservationService.addNewReservation(reservation);
+        //var code = codeService.generateCode(jobResultVariables.get("user_lname").toString(), jobResultVariables.get("movie_date").toString());
+
+        var code = "2138";
+        var reservation = new Reservation();
+
+        reservation.setEmail(jobResultVariables.get("user_email").toString());
+        reservation.setAccessCode(code);
+        reservation.setShowingId(Long.valueOf(jobResultVariables.get("showingId").toString()));
+        reservation.setSeatRow(Integer.parseInt(jobResultVariables.get("seatRow").toString()));
+        reservation.setSeatCol(Integer.parseInt(jobResultVariables.get("seatCol").toString()));
+
+        reservationService.addNewReservation(reservation);
         jobResultVariables.put("access_code", code);
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
+
         return jobResultVariables;
     }
+
 
     @JobWorker(type = "send-to-email")
     public Map<String, Object> sendToEmail(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
-        emailService.sendReservationCodeEmail(jobResultVariables.get("user_email").toString());
+//        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+//        mailSender.setHost(mailHost);
+//        mailSender.setPort(mailPort);
+//        mailSender.setUsername(mailUsername);
+//        mailSender.setPassword(mailPassword);
+//
+//        Properties props = mailSender.getJavaMailProperties();
+//        props.put("mail.transport.protocol", "smtp");
+//        props.put("mail.smtp.auth", "true");
+//        props.put("mail.smtp.starttls.enable", "true");
+//        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+//        props.put("mail.debug", "true");
+//
+//        try {
+//            MimeMessage message = mailSender.createMimeMessage();
+//            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+//
+//            helper.setFrom(mailUsername);
+//            helper.setTo(jobResultVariables.get("user_email").toString());
+//            helper.setSubject("Potwierdzenie anulowania rezerwacji");
+//            helper.setText("Szanowny/a Użytkowniku,  \n\n" +
+//                    "Twoja rezerwacja została pomyślnie przetworzona. Jeśli masz dodatkowe pytania, prosimy o kontakt.\n\n" +
+//                    "Kod dostępu: " + jobResultVariables.get("access_code") + "\n\n" +
+//                    "Pozdrawiamy,\nZespół Rezerwacji");
+//
+//            mailSender.send(message);
+//        } catch (MessagingException me) {
+//            System.out.println("error");
+//        }
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
+
         return jobResultVariables;
     }
 
@@ -122,6 +195,10 @@ public class ReservationWorker {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Seat not available");
         emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "SEAT_NOT_AVAILABLE");
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
         return jobResultVariables;
     }
 
@@ -130,6 +207,10 @@ public class ReservationWorker {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Invalid e-mail");
         emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "INVALID_EMAIL");
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
         return jobResultVariables;
     }
 
@@ -138,7 +219,10 @@ public class ReservationWorker {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Code sent");
         emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "EMAIL_SENT");
-
+//        client.newCompleteCommand(job.getKey())
+//                .variables(jobResultVariables)
+//                .send()
+//                .join();
         return jobResultVariables;
     }
 }
