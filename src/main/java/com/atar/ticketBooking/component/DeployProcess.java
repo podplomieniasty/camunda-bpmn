@@ -12,12 +12,12 @@ public class DeployProcess implements CommandLineRunner {
     private ZeebeClient zeebeClient;
 
     private final String RESERVATION_PROCESS_FILE = "reservation_process_2.bpmn";
-    private final String CANCEL_RESERVATION_PROCESS_FILE = "Cancel-reservation.bpmn";
+    private final String CANCEL_RESERVATION_PROCESS_FILE = "cancel-reservation.bpmn";
 
     @Override
     public void run(String... args) throws Exception {
         zeebeClient.newDeployCommand()
-                .addResourceFromClasspath(RESERVATION_PROCESS_FILE) // Ścieżka do Twojego BPMN
+                .addResourceFromClasspath(RESERVATION_PROCESS_FILE)
                 .addResourceFromClasspath(CANCEL_RESERVATION_PROCESS_FILE)
                 .send()
                 .join();
