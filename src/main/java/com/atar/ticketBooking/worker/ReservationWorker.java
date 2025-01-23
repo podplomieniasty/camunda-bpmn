@@ -3,6 +3,7 @@ package com.atar.ticketBooking.worker;
 import com.atar.ticketBooking.model.Reservation;
 import com.atar.ticketBooking.service.CodeService;
 import com.atar.ticketBooking.service.EmailService;
+import com.atar.ticketBooking.service.EmitterService;
 import com.atar.ticketBooking.service.ReservationService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -23,6 +24,7 @@ public class ReservationWorker {
     @Autowired private ReservationService reservationService;
     @Autowired private CodeService codeService;
     @Autowired private EmailService emailService;
+    @Autowired private EmitterService emitterService;
 
     @JobWorker(type = "verify-seat-availability")
     public Map<String, Object> verifySeatAvailability(final JobClient client, final ActivatedJob job) {
@@ -110,7 +112,6 @@ public class ReservationWorker {
     public Map<String, Object> msgSeatNotAvailable(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Seat not available");
-
         return jobResultVariables;
     }
 
@@ -118,7 +119,7 @@ public class ReservationWorker {
     public Map<String, Object> msgInvalidEmail(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Invalid e-mail");
-
+        emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "INVALID_EMAIL");
         return jobResultVariables;
     }
 

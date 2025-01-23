@@ -116,6 +116,14 @@ function startProcess(obj) {
         .then(variables => {
             processInstanceKey = variables.processInstanceKey;
             console.log(processInstanceKey);
+            const eventSource = new EventSource(`/camunda/subscribe?processInstanceKey=${processInstanceKey}`)
+            eventSource.onmessage = async function (event) {
+                try {
+                    console.log('Camunda: ', event);
+                } catch (err) {
+                    console.error("Error caught in onmessage: ", err);
+                }
+            }
         })
     })
     
