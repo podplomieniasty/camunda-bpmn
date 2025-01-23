@@ -1,15 +1,12 @@
 package com.atar.ticketBooking.controller;
 
-import com.atar.ticketBooking.service.TaskListService;
 import io.camunda.zeebe.client.ZeebeClient;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -20,9 +17,6 @@ public class ProcessController {
 
     @Autowired
     private ZeebeClient zeebeClient;
-
-    @Autowired
-    private TaskListService taskListService;
 
     private static String BPMN_PROCESS_ID = "Process_0733ylc";
 

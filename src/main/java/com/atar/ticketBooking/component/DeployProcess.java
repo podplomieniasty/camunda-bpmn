@@ -11,13 +11,15 @@ public class DeployProcess implements CommandLineRunner {
     @Autowired
     private ZeebeClient zeebeClient;
 
+    private final String RESERVATION_PROCESS_FILE = "reservation_process_2.bpmn";
+
     @Override
     public void run(String... args) throws Exception {
         zeebeClient.newDeployCommand()
-                .addResourceFromClasspath("process.bpmn") // Ścieżka do Twojego BPMN
+                .addResourceFromClasspath(RESERVATION_PROCESS_FILE) // Ścieżka do Twojego BPMN
                 .send()
                 .join();
 
-        System.out.println("Process deployed successfully!");
+        System.out.println("Succesfully deployed " + RESERVATION_PROCESS_FILE );
     }
 }

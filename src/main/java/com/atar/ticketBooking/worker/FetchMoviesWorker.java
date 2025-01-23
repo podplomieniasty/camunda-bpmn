@@ -31,12 +31,11 @@ public class FetchMoviesWorker {
     private MovieService movieService;
 
     @JobWorker(type = "fetch-movies") // Typ musi pasować do "Job Type" w BPMN
-    public void handleFetchMoviesJob(JobClient client, ActivatedJob job) {
+    public Map<String, Object> handleFetchMoviesJob(JobClient client, ActivatedJob job) {
         System.out.println("Fetching movies...");
 
         // Pobieranie listy filmów
         List<?> movies = movieService.getAllMovies();
-        System.out.println("Movies fetched: " + movies);
 
         // Tworzenie zmiennej procesowej
         Map<String, Object> variables = new HashMap<>();
@@ -47,5 +46,7 @@ public class FetchMoviesWorker {
                 .variables(variables)
                 .send()
                 .join();
+
+        return variables;
     }
 }
