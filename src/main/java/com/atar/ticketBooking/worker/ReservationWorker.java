@@ -96,6 +96,16 @@ public class ReservationWorker {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Generating code");
         var code = codeService.generateCode(jobResultVariables.get("user_lname").toString(), jobResultVariables.get("movie_date").toString());
+
+//        var reservation = new Reservation();
+//
+//        reservation.setEmail(jobResultVariables.get("user_email").toString());
+//        reservation.setAccessCode(code);
+//        reservation.setShowingId(Long.valueOf(jobResultVariables.get("showingId").toString()));
+//        reservation.setSeatRow(Integer.parseInt(jobResultVariables.get("seatRow").toString()));
+//        reservation.setSeatCol(Integer.parseInt(jobResultVariables.get("seatCol").toString()));
+//
+//        reservationService.addNewReservation(reservation);
         jobResultVariables.put("access_code", code);
         return jobResultVariables;
     }
@@ -103,7 +113,6 @@ public class ReservationWorker {
     @JobWorker(type = "send-to-email")
     public Map<String, Object> sendToEmail(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
-        System.out.println("Sending e-mail");
         emailService.sendReservationCodeEmail(jobResultVariables.get("user_email").toString());
         return jobResultVariables;
     }
@@ -112,6 +121,7 @@ public class ReservationWorker {
     public Map<String, Object> msgSeatNotAvailable(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Seat not available");
+        emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "SEAT_NOT_AVAILABLE");
         return jobResultVariables;
     }
 
@@ -127,6 +137,7 @@ public class ReservationWorker {
     public Map<String, Object> msgEmailSent(final JobClient client, final ActivatedJob job) {
         var jobResultVariables = job.getVariablesAsMap();
         System.out.println("Sending: Code sent");
+        emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "EMAIL_SENT");
 
         return jobResultVariables;
     }

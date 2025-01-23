@@ -26,5 +26,54 @@
         </div>
     </div>
 </nav>
+<main>
+    <h1>Cancel Reservation</h1>
+    <form id="cancelReservationForm">
+        <label for="accessCode">Access Code:</label>
+        <input type="text" id="accessCode" name="accessCode" required />
+        <br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+        <br><br>
+
+        <button type="submit">Start Process</button>
+    </form>
+
+    <p id="responseMessage"></p>
+</main>
+<script>
+    document.getElementById("cancelReservationForm").addEventListener("submit", async function (event) {
+        event.preventDefault(); // Zapobiega przeładowaniu strony
+
+        // Pobieranie wartości z formularza
+        const accessCode = document.getElementById("accessCode").value;
+        const email = document.getElementById("email").value;
+
+        // Tworzenie obiektu do wysłania
+        const data = {
+            accessCode: accessCode,
+            email: email,
+        };
+
+        try {
+            // Wysyłanie danych do serwera
+            const response = await fetch("http://localhost:8080/process/cancel-reservation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            // Odbieranie odpowiedzi z serwera
+            const responseText = await response.text();
+            document.getElementById("responseMessage").textContent = responseText;
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById("responseMessage").textContent = "An error occurred while starting the process.";
+        }
+    });
+</script>
 </body>
 </html>

@@ -15,6 +15,7 @@ public class ReservationService {
     private ReservationRepository reservationRepository;
 
     public List<Reservation> getAllReservations() {return reservationRepository.findAll();}
+
     public Long addNewReservation(Reservation reservation) {
         reservationRepository.save(reservation);
         return reservation.getId();
@@ -28,4 +29,18 @@ public class ReservationService {
         return true;
     }
 
+
+
+    public boolean doesAccessCodeBelongToEmail(String accessCode, String email) {
+        return reservationRepository.existsByAccessCodeAndEmail(accessCode, email);
+    }
+
+    public Long getShowingIdByAccessCode(String accessCode) {
+        return reservationRepository.findShowingIdByAccessCode(accessCode);
+    }
+
+    public boolean cancelReservationByAccessCode(String accessCode) {
+        int deletedRows = reservationRepository.deleteByAccessCode(accessCode);
+        return deletedRows > 0; // Jeśli usunięto przynajmniej jeden rekord, zwróć true
+    }
 }

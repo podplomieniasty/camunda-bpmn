@@ -120,6 +120,18 @@ function startProcess(obj) {
             eventSource.onmessage = async function (event) {
                 try {
                     console.log('Camunda: ', event.data);
+                    switch(event.data) {
+                        case "INVALID_EMAIL":
+                            alert("Podano błędny adres e-mail. Wprowadź adres ponownie.");
+                        break;
+                        case "SEAT_NOT_AVAILABLE":
+                            alert("Podane miejsce jest zajęte. Wybierz inne.");
+                        break;
+                        case "EMAIL_SENT":
+                            window.location.href = 'reservation_success.html';
+                        break;
+                    }
+
                 } catch (err) {
                     console.error("Error caught in onmessage: ", err);
                 }
