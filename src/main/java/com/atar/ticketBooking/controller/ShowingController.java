@@ -26,7 +26,8 @@ public class ShowingController {
     }
 
     @GetMapping("/showing")
-    private ResponseEntity<List<Showing>> getMovieShowings(@RequestParam Long movieId) {
-        var result = showingService.
+    private ResponseEntity<List<Showing>> getMovieShowings(@RequestParam(name = "movie") Long movieId) {
+        var result = showingService.getAllMovieShowings(movieId);
+        return ResponseEntity.ok(result);
     }
 }

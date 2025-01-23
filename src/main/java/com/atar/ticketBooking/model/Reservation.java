@@ -7,7 +7,6 @@ import jakarta.persistence.Id;
 import lombok.Data;
 
 @Entity
-@Data
 public class Reservation {
 
     @Id
@@ -20,4 +19,52 @@ public class Reservation {
     private Long showingId;
     private Integer seatRow;
     private Integer seatCol;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAccessCode() {
+        return accessCode;
+    }
+
+    public void setAccessCode(String accessCode) {
+        this.accessCode = accessCode;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Long getShowingId() {
+        return showingId;
+    }
+
+    public void setShowingId(Long showingId) {
+        this.showingId = showingId;
+    }
+
+    public Integer getSeatRow() {
+        return seatRow;
+    }
+
+    public void setSeatRow(Integer seatRow) {
+        this.seatRow = seatRow;
+    }
+
+    public Integer getSeatCol() {
+        return seatCol;
+    }
+
+    public void setSeatCol(Integer seatCol) {
+        this.seatCol = seatCol;
+    }
 }

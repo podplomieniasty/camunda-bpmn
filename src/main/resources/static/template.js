@@ -33,8 +33,7 @@ function getModalTemplate(obj, dates, seats) {
           <td>Data seansu:</td>
           <td>
             <select name="movie-date" id="movie-date">
-              <option value="24.01.2025">24.01.2025</option>
-              <option value="25.01.2025">25.01.2025</option>
+              
             </select>
           </td>
         </tr>
@@ -42,8 +41,7 @@ function getModalTemplate(obj, dates, seats) {
           <td>Godzina seansu:</td>
           <td>
             <select name="movie-hour" id="movie-hour" >
-              <option value="A-1">15:00</option>
-              <option value="A-2">17:30</option>
+              
             </select>
           </td>
         </tr>
@@ -75,4 +73,8 @@ function getModalTemplate(obj, dates, seats) {
       <p>Na podany adres e-mail wyślemy Twój kod rezerwacji.</p>
       <button type="button" id="send-data">Zarezerwuj miejsce</button>
     </div>`
+}
+
+function generateSelectOptions(value) {
+  return `<option value="${value}">${value}</option>`;
 }

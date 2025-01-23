@@ -52,7 +52,25 @@ document.addEventListener("DOMContentLoaded", () => {
 function toggleModal(obj) {
     MODAL.style.display = 'flex';
     MODAL.style.visibility = 'visible';
-    MODAL.innerHTML = getModalTemplate(obj)
+    MODAL.innerHTML = getModalTemplate(obj);
+
+    resetGlobalVariables();
+
+    fetch(`/api/showing?movie=${obj.id}`, {
+        method: 'GET',
+    })
+    .then(res => res.json())
+    .then(showings => {
+        showings.forEach(showing => {
+            MOVIE_DATE.innerHTML += generateSelectOptions(showing.date);
+        });
+        MOVIE_DATE.addEventListener('change', () => {
+            MOVIE_HOUR.innerHTML = '';
+            showings.filter((o) => o.date === MOVIE_DATE.value).forEach(showing => {
+                MOVIE_HOUR.innerHTML += generateSelectOptions(showing.hour);
+            })
+        })
+    })
 }
 
 function startProcess(obj) {
