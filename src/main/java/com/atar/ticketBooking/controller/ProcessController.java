@@ -102,6 +102,43 @@ public class ProcessController {
         return "Process started successfully!";
     }
 
+//    @PostMapping("/cancel-reservation")
+//    public String cancelReservationProcess(@RequestParam String variable, HttpSession session) {
+//        // Uruchamianie procesu
+//        String processInstanceId = String.valueOf(zeebeClient.newCreateInstanceCommand()
+//                .bpmnProcessId("Process_1n1fmcy")
+//                .latestVersion()
+//                .variables(Map.of("variableName", variable))
+//                .send()
+//                .join()
+//                .getProcessInstanceKey());
+//
+//        System.out.println("*** Run process Cancel Reservation in instance with id: "+ processInstanceId +" ***" );
+//
+//        return "Process started successfully!";
+//    }
+
+    @PostMapping("/cancel-reservation")
+    public String cancelReservationProcess(@RequestBody Map<String, String> requestBody) {
+        String accessCode = requestBody.get("accessCode");
+        String email = requestBody.get("email");
+
+        String processInstanceId = String.valueOf(zeebeClient.newCreateInstanceCommand()
+                .bpmnProcessId("Process_1n1fmcy")
+                .latestVersion()
+                .variables(Map.of(
+                        "accessCode", accessCode,
+                        "email", email
+                ))
+                .send()
+                .join()
+                .getProcessInstanceKey());
+
+        System.out.println("*** Run process Cancel Reservation in instance with id: " + processInstanceId + " ***");
+
+        return "Process started successfully with instance ID: " + processInstanceId;
+    }
+
 //    @PostMapping("/start")
 //    public String startProcess(@RequestParam String variable) {
 //        // Uruchamianie procesu
