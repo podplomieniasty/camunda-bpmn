@@ -8,6 +8,11 @@
 ## https://docs.camunda.io/docs/apis-tools/spring-zeebe-sdk/configuration/
 
 spring:
+  mail:
+    host: "smtp.gmail.com"
+    port: "587"
+    username: "michalpl6188@gmail.com"
+    password: "awxltchswededsrs"
   mvc:
     view:
       prefix: /WEB-INF/view/

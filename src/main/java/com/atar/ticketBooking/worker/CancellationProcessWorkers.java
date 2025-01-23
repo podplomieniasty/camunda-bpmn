@@ -6,11 +6,17 @@ import com.atar.ticketBooking.service.ShowingService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.spring.client.annotation.JobWorker;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Component
 public class CancellationProcessWorkers {
@@ -132,15 +138,83 @@ public class CancellationProcessWorkers {
         return new HashMap<>();
     }
 
+//    @JobWorker(type = "notify-failed-cancel") // Typ musi pasować do "Job Type" w BPMN
+//    public Map<String, Object> handleNotifyUserFailedCancelJob(JobClient client, ActivatedJob job) {
+//        System.out.println("Notifying user about failed cancelation...");
+//
+//        // Zakończenie zadania bez dodatkowych zmiennych
+//        client.newCompleteCommand(job.getKey())
+//                .send()
+//                .join();
+//
+//        return new HashMap<>();
+//    }
+
     @JobWorker(type = "notify-failed-cancel") // Typ musi pasować do "Job Type" w BPMN
     public Map<String, Object> handleNotifyUserFailedCancelJob(JobClient client, ActivatedJob job) {
-        System.out.println("Notifying user about failed cancelation...");
+        System.out.println("Notifying user about failed cancellation...");
 
-        // Zakończenie zadania bez dodatkowych zmiennych
-        client.newCompleteCommand(job.getKey())
-                .send()
-                .join();
+        Map<String, Object> variables = job.getVariablesAsMap();
+        String email = (String) variables.get("email");
+//        String firstName = (String) variables.get("firstName");
+        String firstName = "Użytkowniku";
 
+        if (email == null ) {
+            System.err.println("Email is missing in process variables.");
+            client.newCompleteCommand(job.getKey()).send().join();
+            return new HashMap<>();
+        }
+
+        try {
+            sendEmail(email, firstName);
+        } catch (Exception e) {
+            System.err.println("Failed to send email: " + e.getMessage());
+        }
+
+        client.newCompleteCommand(job.getKey()).send().join();
         return new HashMap<>();
+    }
+
+    @Value("${spring.mail.host}")
+    private String mailHost;
+
+    @Value("${spring.mail.port}")
+    private int mailPort;
+
+    @Value("${spring.mail.username}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
+    private void sendEmail(String toAddress, String firstName) throws MessagingException {
+        // Konfiguracja JavaMailSender
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(mailHost);
+        mailSender.setPort(mailPort);
+        mailSender.setUsername(mailUsername);
+        mailSender.setPassword(mailPassword);
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.debug", "true");
+
+        // Tworzenie wiadomości
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setFrom(mailUsername);
+        helper.setTo(toAddress);
+        helper.setSubject("Niepowodzenie anulowania rezerwacji");
+        helper.setText("Szanowny/a " + firstName + ",\n\n" +
+                "Nie udało się anulować Twojej rezerwacji. Skontaktuj się z nami, aby uzyskać więcej informacji.\n\n" +
+                "Pozdrawiamy,\nZespół Rezerwacji");
+
+        // Wysyłanie wiadomości
+        mailSender.send(message);
+        System.out.println("Email sent successfully to " + toAddress);
     }
 }
