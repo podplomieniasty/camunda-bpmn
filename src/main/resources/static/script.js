@@ -4,7 +4,14 @@ const API_URL = 'http://localhost:8080/api';
 const CAMUNDA_URL = 'http://localhost:8080/camunda'
 
 const DIV_MOVIES = document.getElementById('movies-wrapper');
-const MODAL = document.getElementById('modal');
+const MODAL = document.getElementById('my-modal');
+
+let MOVIE_DATE = document.getElementById('movie-date');
+let MOVIE_HOUR = document.getElementById('movie-hour');
+let MOVIE_SEAT = document.getElementById('movie-seat');
+let U_FNAME = document.getElementById('user-fname');
+let U_LNAME = document.getElementById('user-lname');
+let U_EMAIL = document.getElementById('user-email');
 
 document.addEventListener("DOMContentLoaded", () => {
     /*
@@ -18,23 +25,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 movies.forEach(mov => {
                     DIV_MOVIES.innerHTML += getCardTemplate(mov);
                 });
+                movies.forEach(mov => {
+                    document.getElementById(`card-${mov.id}`).addEventListener('click', () => {
+                        toggleModal(mov);
+                        document.getElementById('send-data').addEventListener('click', () => {
+                            resetGlobalVariables();
+                            const obj = {
+                                user_fname: U_FNAME.value,
+                                user_lname: U_LNAME.value,
+                                user_email: U_EMAIL.value,
+                                movie_date: MOVIE_DATE.value,
+                                movie_hour: MOVIE_HOUR.value,
+                                movie_seat: MOVIE_SEAT.value,
+                                movie_title: mov.title,
+                                movie_id: mov.id,
+                                movie_genre: mov.genre,
+                                movie_duration: mov.duration,
+                            }
+                            startProcess(obj);
+                        });
+                    }, false);
+                })
             })
 })
 
-function startProcess() {
+function toggleModal(obj) {
+    MODAL.style.display = 'flex';
+    MODAL.style.visibility = 'visible';
+    MODAL.innerHTML = getModalTemplate(obj)
+}
+
+function startProcess(obj) {
     fetch(`/camunda/start`, { 
         method: 'POST',
         headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({
-        variable1: 'This is a test. If this works, then good'
-    })})
+        body: JSON.stringify(obj)})
     .then(res => res.json())
     .then(variables => {
         processInstanceKey = variables.processInstanceKey;
-        const eventSource = new EventSource(`/api/subscribe?processInstanceKey=${processInstanceKey}`);
-        eventSource.onmessage = async function(e) {
-            console.log(e.data);
-        }
+        console.log(processInstanceKey);
     })
 }
 
@@ -49,3 +78,11 @@ function fetchMovies() {
         })
 }
 
+function resetGlobalVariables() {
+    U_FNAME = document.getElementById('user-fname');
+    U_LNAME = document.getElementById('user-lname');
+    U_EMAIL = document.getElementById('user-email');
+    MOVIE_DATE = document.getElementById('movie-date');
+    MOVIE_HOUR = document.getElementById('movie-hour');
+    MOVIE_SEAT = document.getElementById('movie-seat');
+}

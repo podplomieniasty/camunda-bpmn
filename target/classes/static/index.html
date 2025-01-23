@@ -6,6 +6,7 @@
   <title>Ticket booking</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
   <script src="template.js"></script>
 </head>
 <body>
@@ -33,25 +34,68 @@
 
   </div>
 
-    <!-- Modal -->
-  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          ...
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Understood</button>
-        </div>
-      </div>
-    </div>
+  <div id="my-modal" style="visibility: hidden;">
+    <!-- <div class="modal-wrapper">
+      <h3>Rezerwacja biletów</h3>
+      <button type="button" class="modal-close">X</button>
+      <table class="modal-table">
+        <tr>
+          <td>Bilet na:</td><td>mov.title</td>
+        </tr>
+        <tr>
+          <td>Gatunek:</td><td>mov.genre</td>
+        </tr>
+        <tr>
+          <td>Czas trwania:</td><td>mov.duration</td>
+        </tr>
+        <tr>
+          <td>Data seansu:</td>
+          <td>
+            <select name="movie-date" id="movie-date">
+              <option value="24.01.2025">24.01.2025</option>
+              <option value="25.01.2025">25.01.2025</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Godzina seansu:</td>
+          <td>
+            <select name="movie-hour" id="movie-hour" >
+              <option value="A-1">15:00</option>
+              <option value="A-2">17:30</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Miejsce siedzące</td>
+          <td>
+            <select name="movie-seat" id="movie-seat" >
+              <option value="A-1">A-1</option>
+              <option value="A-2">A-2</option>
+              <option value="B-1">B-1</option>
+              <option value="B-2">B-2</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+      
+      <h4>Dane użytkownika</h4>
+      <table class="modal-table">
+        <tr>
+          <td>Imię:</td><td><input type="text" id="user_fname"/></td>
+        </tr>
+        <tr>
+          <td>Nazwisko:</td><td><input type="text" id="user_lname"/></td>
+        </tr>
+        <tr>
+          <td>Adres e-mail<span style="font-weight: bold; color: red;">*</span>:</td><td><input required ="text" id="user_email"/></td>
+        </tr>
+      </table>
+      <p>Na podany adres e-mail wyślemy Twój kod rezerwacji.</p>
+      <button type="button" id="send-data">Zarezerwuj miejsce</button>
+    </div> -->
   </div>
-
+  
   <script src="script.js"></script>
 </body>
 </html>
