@@ -1,6 +1,7 @@
 package com.atar.ticketBooking.worker;
 
 import com.atar.ticketBooking.model.Showing;
+import com.atar.ticketBooking.service.EmitterService;
 import com.atar.ticketBooking.service.ReservationService;
 import com.atar.ticketBooking.service.ShowingService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
@@ -27,6 +28,10 @@ public class CancellationProcessWorkers {
     @Autowired
     ShowingService showingService;
 
+    @Autowired
+    private EmitterService emitterService;
+
+
     @Value("${spring.mail.host}")
     private String mailHost;
 
@@ -40,7 +45,7 @@ public class CancellationProcessWorkers {
     private String mailPassword;
 
 
-    @JobWorker(type = "verify-access-code")
+    @JobWorker(type = "verify-access-code", autoComplete = true)
     public Map<String, Object> handleVerifyAccessCodeJob(JobClient client, ActivatedJob job) {
         System.out.println("*** Verifying access code... ***");
 
@@ -53,6 +58,10 @@ public class CancellationProcessWorkers {
         Map<String, Object> variables = new HashMap<>();
         variables.put("belongs", belongs);
 
+        if (!belongs) {
+            emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "INVALID_DATA");
+        }
+
         client.newCompleteCommand(job.getKey())
                 .variables(variables)
                 .send()
@@ -63,7 +72,7 @@ public class CancellationProcessWorkers {
         return variables;
     }
 
-    @JobWorker(type = "check-movie-date")
+    @JobWorker(type = "check-movie-date", autoComplete = true)
     public Map<String, Object> handleCheckMovieDateJob(JobClient client, ActivatedJob job) {
         System.out.println("*** Checking movie date... ***");
 
@@ -82,6 +91,12 @@ public class CancellationProcessWorkers {
             }
 
             boolean lessThan24h = showingService.isShowingLessThan24HoursAway(showing);
+
+            if (lessThan24h) {
+                emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "RESERVATION_CANCELLED_FAILED");
+            } else {
+                emitterService.sendMessageToListener(String.valueOf(job.getProcessInstanceKey()), "RESERVATION_CANCELLED_SUCCESS");
+            }
 
             Map<String, Object> variables = new HashMap<>();
             variables.put("less_than_24h", lessThan24h);
@@ -104,7 +119,7 @@ public class CancellationProcessWorkers {
         }
     }
 
-    @JobWorker(type = "cancel-reservation")
+    @JobWorker(type = "cancel-reservation", autoComplete = true)
     public Map<String, Object> handleCancelReservationJob(JobClient client, ActivatedJob job) {
         System.out.println("*** Canceling reservation... ***");
 
@@ -144,7 +159,7 @@ public class CancellationProcessWorkers {
         return variables;
     }
 
-    @JobWorker(type = "notify-cancel")
+    @JobWorker(type = "notify-cancel", autoComplete = true)
     public Map<String, Object> handleNotifyUserCancelJob(JobClient client, ActivatedJob job) {
         System.out.println("*** Notifying user about successful cancellation... ***");
 
@@ -213,7 +228,7 @@ public class CancellationProcessWorkers {
         System.out.println("*** Email sent successfully to " + toAddress +" ***");
     }
 
-    @JobWorker(type = "notify-failed-cancel")
+    @JobWorker(type = "notify-failed-cancel", autoComplete = true)
     public Map<String, Object> handleNotifyUserFailedCancelJob(JobClient client, ActivatedJob job) {
         System.out.println("*** Notifying user about failed cancellation... ***");
 
@@ -272,7 +287,7 @@ public class CancellationProcessWorkers {
 
         helper.setFrom(mailUsername);
         helper.setTo(toAddress);
-        helper.setSubject("Niepowodzenie anulowania rezerwacji");
+        helper.setSubject("Błąd anulowania rezerwacji");
         helper.setText("Szanowny/a Użytkowniku,\n\n" +
                 "Nie udało się anulować Twojej rezerwacji. Skontaktuj się z nami, aby uzyskać więcej informacji.\n\n" +
                 "Pozdrawiamy,\nZespół Rezerwacji");

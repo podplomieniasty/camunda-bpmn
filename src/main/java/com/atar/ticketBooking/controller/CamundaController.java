@@ -21,12 +21,25 @@ public class CamundaController {
     private EmitterService emitterService;
 
     private final String RESERVATION_PROCESS_ID = "reservation-process";
+    private final String CANCEL_RESERVATION_PROCESS_ID = "Process_cancel_reservation";
 
     @PostMapping("/start")
     public Map<String, Object> beginProcess(@RequestBody Map<String, Object> variables) {
         var event = zeebeClient
                 .newCreateInstanceCommand()
                 .bpmnProcessId(RESERVATION_PROCESS_ID)
+                .latestVersion()
+                .variables(variables)
+                .send();
+        variables.put("processInstanceKey", event.join().getProcessInstanceKey());
+        return variables;
+    }
+
+    @PostMapping("/cancel")
+    public Map<String, Object> cancelReservationProcess(@RequestBody Map<String, Object> variables) {
+        var event = zeebeClient
+                .newCreateInstanceCommand()
+                .bpmnProcessId(CANCEL_RESERVATION_PROCESS_ID)
                 .latestVersion()
                 .variables(variables)
                 .send();

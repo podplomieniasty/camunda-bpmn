@@ -1,11 +1,9 @@
-#spring.datasource.url: jdbc:h2:file:./camunda-h2-database
-#
-#camunda.bpm.admin-user:
-#  id: admin
-#  password: admin
-#
 ## https://docs.camunda.io/docs/apis-tools/spring-zeebe-sdk/getting-started/
 ## https://docs.camunda.io/docs/apis-tools/spring-zeebe-sdk/configuration/
+
+logging:
+  level:
+    io.camunda.zeebe: ERROR  # Remove logging warnings
 
 spring:
   mail:
@@ -34,6 +32,9 @@ spring:
     open-in-view: false # Only for delete warning
 
 camunda:
+  bpm:
+    enabled: true
+    history-level: full
   client:
     mode: saas
     auth:
@@ -41,20 +42,3 @@ camunda:
       client-secret: srdrNn_7MVX7I5Qeyt.kXJti-.4iIHhOM6JIW7fuOpT9X-kEZ.GEUGo94eeoNjMi
     cluster-id: 84eaee38-4bb9-4ed7-b5dc-4395bc8bb99f
     region: bru-2
-
-
-
-#  bpm:
-#    enforce-ttl: true
-#    default-history-time-to-live: 30
-
-
-#zeebe:
-#  client:
-#    cloud:
-#      clusterId: 84eaee38-4bb9-4ed7-b5dc-4395bc8bb99f
-#      clientId: Ci~mKD6hAKrryws1cyHkIndQV2kgZ_RX
-#      clientSecret: srdrNn_7MVX7I5Qeyt.kXJti-.4iIHhOM6JIW7fuOpT9X-kEZ.GEUGo94eeoNjMi
-#    gatewayAddress: "localhost:26500" # Lokalny broker (dla self-managed)
-#    security:
-#      plaintext: true

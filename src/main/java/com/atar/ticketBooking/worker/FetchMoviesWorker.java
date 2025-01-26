@@ -30,7 +30,7 @@ public class FetchMoviesWorker {
     @Autowired
     private MovieService movieService;
 
-    @JobWorker(type = "fetch-movies") // Typ musi pasować do "Job Type" w BPMN
+    @JobWorker(type = "fetch-movies", autoComplete = true) // Typ musi pasować do "Job Type" w BPMN
     public Map<String, Object> handleFetchMoviesJob(JobClient client, ActivatedJob job) {
         System.out.println("Fetching movies...");
 

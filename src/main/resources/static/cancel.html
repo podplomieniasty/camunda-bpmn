@@ -26,54 +26,29 @@
         </div>
     </div>
 </nav>
-<main>
-    <h1>Cancel Reservation</h1>
-    <form id="cancelReservationForm">
-        <label for="accessCode">Access Code:</label>
-        <input type="text" id="accessCode" name="accessCode" required />
-        <br><br>
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
-        <br><br>
+<main class="mt-5 mx-md-auto mx-5 col-md-4">
+    <h1 class="text-center text-primary fw-semibold mb-4">Anuluj rezerwację</h1>
+    <form id="cancelReservationForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="accessCode" class="form-label">Kod dostępu:</label>
+            <input type="text" class="form-control" id="accessCode" name="accessCode" required />
+            <div class="invalid-feedback">Please provide a valid access code.</div>
+        </div>
 
-        <button type="submit">Start Process</button>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="email" name="email" required />
+            <div class="invalid-feedback">Please provide a valid email address.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">Start Process</button>
     </form>
 
-    <p id="responseMessage"></p>
+    <p id="responseMessage" class="text-center mt-4"></p>
 </main>
-<script>
-    document.getElementById("cancelReservationForm").addEventListener("submit", async function (event) {
-        event.preventDefault(); // Zapobiega przeładowaniu strony
 
-        // Pobieranie wartości z formularza
-        const accessCode = document.getElementById("accessCode").value;
-        const email = document.getElementById("email").value;
+<script src="cancel_script.js"></script>
 
-        // Tworzenie obiektu do wysłania
-        const data = {
-            accessCode: accessCode,
-            email: email,
-        };
-
-        try {
-            // Wysyłanie danych do serwera
-            const response = await fetch("http://localhost:8080/process/cancel-reservation", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            // Odbieranie odpowiedzi z serwera
-            const responseText = await response.text();
-            document.getElementById("responseMessage").textContent = responseText;
-        } catch (error) {
-            console.error("Error:", error);
-            document.getElementById("responseMessage").textContent = "An error occurred while starting the process.";
-        }
-    });
-</script>
 </body>
 </html>
